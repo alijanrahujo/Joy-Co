@@ -162,23 +162,23 @@
                     <div class="col-6 col-md-3">
                         <div class="products wow fadeInUp" data-wow-delay=".2s">
                             <div class="proimg">
-                                <img src="{{ getStorageImages(path: $product->product->thumbnail_full_url, type: 'product') }}" class="img-fluid">
+                                <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}" class="img-fluid">
                                 {{-- <a href="javascript:" class="btn-shopnow btnproduct action-product-quick-view" data-product-id="{{ $product->id }}">shop now</a> --}}
-                                <a href="{{route('product',$product->product->slug)}}" class="btn-shopnow btnproduct" data-product-id="{{ $product->id }}">shop now</a>
-                                @if($product->product->discount > 0)
+                                <a href="{{route('product',$product->slug)}}" class="btn-shopnow btnproduct" data-product-id="{{ $product->id }}">shop now</a>
+                                @if($product->discount > 0)
                                 <span class="dtags">
-                                    @if ($product->product->discount_type == 'percent')
-                                    {{'OFF'.' '.round($product->product->discount, $web_config['decimal_point_settings'])}}%
-                                    @elseif($product->product->discount_type =='flat')
-                                    {{'OFF'.' '.Helpers::currency_converter($product->product->discount)}}
+                                    @if ($product->discount_type == 'percent')
+                                    {{'OFF'.' '.round($product->discount, $web_config['decimal_point_settings'])}}%
+                                    @elseif($product->discount_type =='flat')
+                                    {{'OFF'.' '.Helpers::currency_converter($product->discount)}}
                                     @endif
                                 </span>
                                 @endif
                             </div>
                             <div class="pro-detail">
-                                <h6>{{Str::limit($product->product->product_type, 25)}}</h6>
-                                <h4>{{Str::limit($product->product->name, 25)}}</h4>
-                                <p class="price">{{Helpers::currency_converter($product->product->unit_price)}}</p>
+                                <h6>{{Str::limit($product->product_type, 25)}}</h6>
+                                <h4>{{Str::limit($product->name, 25)}}</h4>
+                                <p class="price">{{Helpers::currency_converter($product->unit_price)}}</p>
                             </div>
                         </div>
                     </div>
