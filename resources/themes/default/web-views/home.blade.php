@@ -159,6 +159,7 @@
             <div class="row product-list">
                 @foreach ($topRated as $product)
                     {{-- {{$product}} --}}
+                    @if(isset($product->product->name))
                     <div class="col-6 col-md-3">
                         <div class="products wow fadeInUp" data-wow-delay=".2s">
                             <div class="proimg">
@@ -182,6 +183,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                 @endforeach
             </div>
         </section>
