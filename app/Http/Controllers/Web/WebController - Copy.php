@@ -390,62 +390,55 @@ class WebController extends Controller
 
     public function checkout_details(Request $request)
     {
-        // Check if the cart has items
-    $cartCount = Cart::when(auth('customer')->check(), function ($query) {
-        $query->where('customer_id', auth('customer')->id());
-    }, function ($query) {
-        $query->where('is_guest', 1);
-    })->count();
-
-    if ($cartCount < 1) {
-        Toastr::error(translate('Your cart is empty. Please add items to proceed.'));
-        return redirect('/');
-    }
-
-    $response = self::checkValidationForCheckoutPages($request);
-    if ($response['status'] == 0) {
-        foreach ($response['message'] as $message) {
-            Toastr::error($message);
+        if (
+            (!auth('customer')->check() || Cart::where(['customer_id' => auth('customer')->id()])->count() < 1)
+            && (!getWebConfig(name: 'guest_checkout') || !session()->has('guest_id') || !session('guest_id'))
+        ) {
+            Toastr::error(translate('invalid_access'));
+            return redirect('/');
         }
-        return isset($response['redirect']) ? redirect($response['redirect']) : redirect('/');
-    }
 
-    $countryRestrictStatus = getWebConfig(name: 'delivery_country_restriction');
-    $zipRestrictStatus = getWebConfig(name: 'delivery_zip_code_area_restriction');
-    $countries = $countryRestrictStatus ? $this->get_delivery_country_array() : COUNTRIES;
-    $zipCodes = $zipRestrictStatus ? DeliveryZipCode::all() : 0;
-    $billingInputByCustomer = getWebConfig(name: 'billing_input_by_customer');
-    $defaultLocation = getWebConfig(name: 'default_location');
+        $response = self::checkValidationForCheckoutPages($request);
+        if ($response['status'] == 0) {
+            foreach ($response['message'] as $message) {
+                Toastr::error($message);
+            }
+            return isset($response['redirect']) ? redirect($response['redirect']) : redirect('/');
+        }
 
-    $user = auth('customer')->check() ? auth('customer')->user() : 'offline';
-    $customerId = $user === 'offline' ? null : $user->id;
+        $countryRestrictStatus = getWebConfig(name: 'delivery_country_restriction');
+        $zipRestrictStatus = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $countries = $countryRestrictStatus ? $this->get_delivery_country_array() : COUNTRIES;
+        $zipCodes = $zipRestrictStatus ? DeliveryZipCode::all() : 0;
+        $billingInputByCustomer = getWebConfig(name: 'billing_input_by_customer');
+        $defaultLocation = getWebConfig(name: 'default_location');
 
-    $shippingAddresses = ShippingAddress::where([
-        'customer_id' => $customerId,
-        'is_guest' => $user === 'offline' ? 1 : 0,
-    ])->get();
+        $user = Helpers::get_customer($request);
+        $shippingAddresses = ShippingAddress::where([
+            'customer_id' => $user == 'offline' ? session('guest_id') : auth('customer')->id(),
+            'is_guest' => $user == 'offline' ? 1 : '0',
+        ])->get();
 
-    $countriesName = [];
-    $countriesCode = [];
-    foreach ($countries as $country) {
-        $countriesName[] = $country['name'];
-        $countriesCode[] = $country['code'];
-    }
+        $countriesName = [];
+        $countriesCode = [];
+        foreach ($countries as $country) {
+            $countriesName[] = $country['name'];
+            $countriesCode[] = $country['code'];
+        }
 
-    return view(VIEW_FILE_NAMES['order_shipping'], [
-        'physical_product_view' => $response['physical_product_view'],
-        'zip_codes' => $zipCodes,
-        'country_restrict_status' => $countryRestrictStatus,
-        'zip_restrict_status' => $zipRestrictStatus,
-        'countries' => $countries,
-        'countriesName' => $countriesName,
-        'countriesCode' => $countriesCode,
-        'billing_input_by_customer' => $billingInputByCustomer,
-        'default_location' => $defaultLocation,
-        'shipping_addresses' => $shippingAddresses,
-        'billing_addresses' => $shippingAddresses,
-    ]);
-    
+        return view(VIEW_FILE_NAMES['order_shipping'], [
+            'physical_product_view' => $response['physical_product_view'],
+            'zip_codes' => $zipCodes,
+            'country_restrict_status' => $countryRestrictStatus,
+            'zip_restrict_status' => $zipRestrictStatus,
+            'countries' => $countries,
+            'countriesName' => $countriesName,
+            'countriesCode' => $countriesCode,
+            'billing_input_by_customer' => $billingInputByCustomer,
+            'default_location' => $defaultLocation,
+            'shipping_addresses' => $shippingAddresses,
+            'billing_addresses' => $shippingAddresses
+        ]);
     }
 
     public function checkout_payment(Request $request)
@@ -746,63 +739,50 @@ class WebController extends Controller
 
     public function shop_cart(Request $request): View|RedirectResponse
     {
-       // Count items in the cart, either for logged-in users or guests
-    $cartCount = Cart::when(auth('customer')->check(), function ($query) {
-        // For logged-in users
-        $query->where('customer_id', auth('customer')->id());
-    }, function ($query) {
-        // For guests
-        $query->where('is_guest', 1);
-    })->count();
+        if (
+            (auth('customer')->check() && Cart::where(['customer_id' => auth('customer')->id()])->count() > 0)
+            || (getWebConfig(name: 'guest_checkout') && session()->has('guest_id') && session('guest_id'))
+        ) {
+            $topRatedShops = [];
+            $newSellers = [];
+            $currentDate = date('Y-m-d H:i:s');
+            if (theme_root_path() === "theme_fashion") {
 
-    // If the cart is not empty (either for logged-in users or guests), proceed
-    if ($cartCount > 0 || (getWebConfig(name: 'guest_checkout') && session()->has('guest_id') && session('guest_id'))) {
-        $topRatedShops = [];
-        $newSellers = [];
-        $currentDate = date('Y-m-d H:i:s');
-        
-        if (theme_root_path() === "theme_fashion") {
-            // Your existing code to fetch seller data
-            $sellerList = $this->seller->approved()->with(['shop', 'product.reviews'])
-                ->withCount(['product' => function ($query) {
-                    $query->active();
-                }])->get();
-
-            $sellerList?->map(function ($seller) {
-                $rating = 0;
-                $count = 0;
-                foreach ($seller->product as $item) {
-                    foreach ($item->reviews as $review) {
-                        $rating += $review->rating;
-                        $count++;
+                $sellerList = $this->seller->approved()->with(['shop', 'product.reviews'])
+                    ->withCount(['product' => function ($query) {
+                        $query->active();
+                    }])->get();
+                $sellerList?->map(function ($seller) {
+                    $rating = 0;
+                    $count = 0;
+                    foreach ($seller->product as $item) {
+                        foreach ($item->reviews as $review) {
+                            $rating += $review->rating;
+                            $count++;
+                        }
                     }
-                }
-                $averageRating = $rating / ($count == 0 ? 1 : $count);
-                $ratingCount = $count;
-                $seller['average_rating'] = $averageRating;
-                $seller['rating_count'] = $ratingCount;
+                    $averageRating = $rating / ($count == 0 ? 1 : $count);
+                    $ratingCount = $count;
+                    $seller['average_rating'] = $averageRating;
+                    $seller['rating_count'] = $ratingCount;
 
-                $productCount = $seller->product->count();
-                $randomProduct = Arr::random($seller->product->toArray(), $productCount < 3 ? $productCount : 3);
-                $seller['product'] = $randomProduct;
-                return $seller;
-            });
-
-            $newSellers = $sellerList->sortByDesc('id')->take(12);
-            $topRatedShops = $sellerList->where('rating_count', '!=', 0)->sortByDesc('average_rating')->take(12);
+                    $productCount = $seller->product->count();
+                    $randomProduct = Arr::random($seller->product->toArray(), $productCount < 3 ? $productCount : 3);
+                    $seller['product'] = $randomProduct;
+                    return $seller;
+                });
+                $newSellers = $sellerList->sortByDesc('id')->take(12);
+                $topRatedShops = $sellerList->where('rating_count', '!=', 0)->sortByDesc('average_rating')->take(12);
+            }
+            return view(VIEW_FILE_NAMES['cart_list'], compact('topRatedShops', 'newSellers', 'currentDate', 'request'));
+        }
+        Toastr::warning(translate('please_login_your_account'));
+        if (theme_root_path() == 'default'){
+            return redirect('customer/auth/login');
+        }else{
+            return redirect('/');
         }
 
-        // Return the cart page view with the necessary data
-        return view(VIEW_FILE_NAMES['cart_list'], compact('topRatedShops', 'newSellers', 'currentDate', 'request'));
-    }
-
-    // If the cart is empty or the user is not authorized to view it, redirect
-    Toastr::warning(translate('please_login_your_account'));
-    if (theme_root_path() == 'default'){
-        return redirect('customer/auth/login');
-    } else {
-        return redirect('/');
-    }
     }
 
     //ajax filter (category based)

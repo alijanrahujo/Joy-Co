@@ -8437,4 +8437,6 @@ return [
 	"product_removed_from_the_wishlist" => "Product removed from the wishlist",
 	"Order_Placed_Successfully" => "Order Placed Successfully",
 	"select_shipping_method" => "Select shipping method",
+	"add_jjto_cart" => "Add jjto cart",
+	"best_delivery_service,_highly_recommended" => "Best delivery service  highly recommended",
 ];

@@ -41,7 +41,12 @@
                                         <img src="{{asset('public/frontend/images/cart-item.jpg')}}" class="img-fluid">
                                     </div>
                                     <div class="col-md-5 border-end mt-3 mt-md-0">
-                                        <h4>Vase Rectangular Medium</h4>
+                                        <h4>
+                                             <a href="{{ route('account-order-details', ['id'=>$order->id]) }}"
+                                                        class="fs-14 font-semibold">
+                                                        {{ translate('order') }}  #{{$order['id']}}
+                                                    </a>
+                                        </h4>
                                         <p class="pt-3">Color : dark blue</p>
                                         <div class="btn-group mt-3">
                                             <a href="#" class="main-btnreverse py-2 px-4">exchange</a>

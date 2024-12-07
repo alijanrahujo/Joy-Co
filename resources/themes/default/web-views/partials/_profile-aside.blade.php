@@ -13,6 +13,6 @@
                             </ul>
     </nav>
     <div class="signout">
-        <a href="#"><img src="{{asset('public/frontend/images/switch-icon.svg')}}" alt=""> sign out</a>
+        <a href="{{route('customer.auth.logout')}}"><img src="{{asset('public/frontend/images/switch-icon.svg')}}" alt=""> sign out</a>
     </div>
 </div>
