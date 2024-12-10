@@ -48,7 +48,7 @@
                 <div class="col-lg-3 col-md-4 right-header" id="cart_items">
                     <ul>
                         <li><a href="#" id="searchbar"><img src="{{asset('public/frontend/images/search-icon.svg')}}" /></a></li>
-                        <li><a href="#" class="position-relative"><img src="{{asset('public/frontend/images/heart-icon.svg')}}" />
+                        <li><a href="{{route('wishlists')}}" class="position-relative"><img src="{{asset('public/frontend/images/heart-icon.svg')}}" />
                             <span class="countWishlist countcart">
                                 {{session()->has('wish_list')?count(session('wish_list')):0}}
                             </span></a></li>
