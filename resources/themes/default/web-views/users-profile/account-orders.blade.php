@@ -24,11 +24,10 @@
                         <div class="col-md-9">
                             <div class="panel-area myorder p-4 p-md-5">
                                 <div class="row">
-                                    <div class="col-12 searchboxx">
-                                        <form>
+                                    <div class="searchboxx">
+                                        <form onsubmit="return false;">
                                             <div class="input-group mb-3">
-                                                <input type="text" class="form-control"
-                                                    placeholder="Search your orders here">
+                                                <input type="text" id="searchOrders" class="form-control" placeholder="Search your orders here">
                                                 <button class="btn btn-outline-secondary" type="submit">search</button>
                                             </div>
                                         </form>
@@ -38,7 +37,15 @@
                                 @foreach($orders as $order)
                                 <div class="car-item row mt-5">
                                     <div class="col-md-3 col-7">
-                                        <img src="{{asset('public/frontend/images/cart-item.jpg')}}" class="img-fluid">
+                                        <a href="{{ route('account-order-details', ['id'=>$order->id]) }}" class="d-block position-relative">
+                                            @if($order->seller_is == 'seller')
+                                                <img alt="{{ translate('shop') }}"
+                                                     src="{{ getStorageImages(path: $order?->seller?->shop->image_full_url, type: 'shop') }}" class="img-fluid">
+                                            @elseif($order->seller_is == 'admin')
+                                                <img alt="{{ translate('shop') }}"
+                                                     src="{{ getStorageImages(path: $web_config['fav_icon'], type: 'shop') }}" class="img-fluid">
+                                            @endif
+                                            </a>
                                     </div>
                                     <div class="col-md-5 border-end mt-3 mt-md-0">
                                         <h4>
@@ -47,16 +54,33 @@
                                                         {{ translate('order') }}  #{{$order['id']}}
                                                     </a>
                                         </h4>
-                                        <p class="pt-3">Color : dark blue</p>
-                                        <div class="btn-group mt-3">
+                                        <p class="pt-3">
+                                            {{ $order->order_details_sum_qty }} {{ translate('items') }}
+                                        </p>
+                                        <p>
+                                            @if($order['order_status']=='failed' || $order['order_status']=='canceled')
+                                                <span class="status-badge rounded-pill __badge badge-soft-danger fs-12 font-semibold text-capitalize">
+                                                    {{ translate($order['order_status'] =='failed' ? 'failed_to_deliver' : $order['order_status']) }}
+                                                </span>
+                                            @elseif($order['order_status']=='confirmed' || $order['order_status']=='processing' || $order['order_status']=='delivered')
+                                                <span class="status-badge rounded-pill __badge badge-soft-success fs-12 font-semibold text-capitalize">
+                                                    {{ translate($order['order_status']=='processing' ? 'packaging' : $order['order_status']) }}
+                                                </span>
+                                            @else
+                                                <span class="status-badge rounded-pill __badge badge-soft-primary fs-12 font-semibold text-capitalize">
+                                                    {{ translate($order['order_status']) }}
+                                                </span>
+                                            @endif
+                                        </p>
+                                        {{-- <div class="btn-group mt-3">
                                             <a href="#" class="main-btnreverse py-2 px-4">exchange</a>
                                             <a href="#" class="main-btnreverse py-2 px-4 ms-2 ms-md-5">return</a>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                     <div class="col-md-4 text-md-end mt-3 mt-md-0">
                                         <p class="text-uppercase">
                                             expected deliverY<br>
-                                            <strong>2023 Sun, 23 Aug</strong>
+                                            <strong>{{date('d M, Y h:i A',strtotime('7 days'.$order['created_at'])) }}</strong>
                                         </p>
                                         <div class="actions pt-md-4">
                                             <div class="rateproduct">
@@ -103,3 +127,27 @@
     </div>
 
 @endsection
+
+@push('script')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchOrders');
+        const orderItems = document.querySelectorAll('.car-item');
+
+        searchInput.addEventListener('input', function () {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            orderItems.forEach(order => {
+                const orderText = order.textContent.toLowerCase();
+                if (orderText.includes(searchTerm)) {
+                    order.style.display = ''; // Show the order
+                } else {
+                    order.style.display = 'none'; // Hide the order
+                }
+            });
+        });
+    });
+</script>
+    
+@endpush
