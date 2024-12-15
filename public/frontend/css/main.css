@@ -2465,6 +2465,7 @@ div#offcanvasRight {
         margin-top: 15px;
         font-size: 14px;
         padding: 16px 26px;
+        width: 100%;
     }
 
     #offcanvasRightLabel {
@@ -2666,6 +2667,11 @@ div#offcanvasRight {
         padding: 64px 0 0;
     }
 
-
+    .quantity-cart .quantity-input input{
+      width: 80%;
+    }
+    .quantity-cart{
+      width: 100%;
+    }
 
 }
