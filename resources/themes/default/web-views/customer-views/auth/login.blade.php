@@ -32,16 +32,38 @@
                     <h1 class="pb-4">Hey, Welcome</h1>
                     <div class="regisbar">Still don’t have an account? <a href="{{ route('customer.auth.sign-up') }}">Register now</a></div>
                     <div class="login-form pt-3 pt-md-5 pb-5">
+
                         <form class="needs-validation mt-2" autocomplete="off" action="{{route('customer.auth.login')}}"
                         method="post" id="customer-login-form">
                             @csrf
+
+                             <!-- Display errors -->
+                            <div class="">
+                                @if ($errors->any())
+                                    <div class="alert-danger">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                @if (session('error'))
+                                    <div class="alert-danger">
+                                        {{ session('error') }}
+                                    </div>
+                                @endif
+                            </div>
+
                             <div class="form-group">
                                 <input type="text" class="form-control" placeholder="Email*" name="user_id" required>
                             </div>
                             <div class="form-group pass position-relative">
                                 <input type="password" class="form-control" placeholder="Password*" name="password" id="passwords" required>
-                                <button><img src="{{ theme_asset(path: 'public/frontend/images/eye-icon.svg') }}" alt=""></button>
+                                <button type="button" class="eye-icon-btn position-absolute" id="togglePassword"><img src="{{ theme_asset(path: 'public/frontend/images/eye-icon-closed.svg') }}" alt="" id="eyeIcon"></button>
                             </div>
+
                             <div class="row pt-5 pb-5 d-none d-md-flex">
                                 <div class="col-6">
                                     <div class="form-check">
@@ -88,6 +110,7 @@
     <script src="{{ theme_asset(path: 'public/frontend/js/main.js') }}"></script>
 
     <script>
+
         $(function () {
             var zeynep = $('.zeynep').zeynep({
                 opened: function () {
@@ -111,6 +134,20 @@
             })
 
         })
+        
+        document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordField = document.getElementById('passwords');
+        const eyeIcon = document.getElementById('eyeIcon');
+        const isPassword = passwordField.getAttribute('type') === 'password';
+
+        const eyeClosed = "{!! theme_asset(path: 'public/frontend/images/eye-icon-closed.svg') !!}";
+        const eyeOpen = "{!! theme_asset(path: 'public/frontend/images/eye-icon.svg') !!}";
+
+        // Toggle input type and icon
+        passwordField.setAttribute('type', isPassword ? 'text' : 'password');
+        eyeIcon.src = isPassword ? decodeURIComponent(eyeOpen) : decodeURIComponent(eyeClosed);
+    });
+
     </script>
 
 </body>

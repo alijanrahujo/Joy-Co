@@ -28,7 +28,7 @@ class CustomerRegistrationRequest extends FormRequest
             'f_name' => 'required',
             'email' => 'required|email|unique:users',
             'phone' => 'required|unique:users|max:20',
-            'password' => 'required|same:con_password',
+            'password' => 'required|confirmed',
 
         ];
     }
@@ -41,6 +41,7 @@ class CustomerRegistrationRequest extends FormRequest
             'phone.required' => translate('phone_number_is_required'),
             'phone.unique' => translate('phone_number_already_has_been_taken'),
             'phone.max' => translate('The_phone_number_may_not_be_greater_than_20_characters'),
+            'password.confirmed' => translate('password and confirmation password must be same.'),
         ];
     }
 
@@ -82,6 +83,13 @@ class CustomerRegistrationRequest extends FormRequest
 
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
     {
-        throw new HttpResponseException(response()->json(['errors' => $this->errorProcessor($validator)]));
+        
+        throw new HttpResponseException(
+            redirect()->back()->withErrors($validator)->withInput()
+        );
+
+        //throw new HttpResponseException(response()->json(['errors' => $this->errorProcessor($validator)]));
     }
+
+
 }

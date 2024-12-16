@@ -8439,4 +8439,8 @@ return [
 	"select_shipping_method" => "Select shipping method",
 	"add_jjto_cart" => "Add jjto cart",
 	"best_delivery_service,_highly_recommended" => "Best delivery service  highly recommended",
+	"The user ID field is required." => "The user ID field is required.",
+	"The password field is required." => "The password field is required.",
+	"The phone number must be at least 4 characters" => "The phone number must be at least 4 characters",
+	"password and confirmation password must be same." => "Password and confirmation password must be same.",
 ];

@@ -116,7 +116,9 @@ class LoginController extends Controller
                 ]);
             }else{
                 Toastr::error(translate('credentials_doesnt_match'));
-                return back()->withInput();
+                return back()->with('error', 'Invalid email or password')->withInput();
+
+                //return back()->withInput();
             }
         }
         //login attempt check end

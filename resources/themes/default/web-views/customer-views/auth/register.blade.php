@@ -47,20 +47,28 @@
                                     <div class="form-group">
                                         <input type="text" class="form-control" value="{{ old('f_name')}}" placeholder="first name*" name="f_name"
                                             required>
+                                            @if ($errors->has('f_name'))
+                                                <small class="text-danger">{{ $errors->first('f_name') }}</small>
+                                            @endif
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <input type="text" class="form-control"  value="{{old('l_name') }}" placeholder="LASt name" name="l_name">
+                                        
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <select name="" id="" class="form-select select-control">
-                                            <option value="REGION*">REGION*</option>
-                                            <option value="REGION*">REGION*</option>
-                                            <option value="REGION*">REGION*</option>
-                                            <option value="REGION*">REGION*</option>
+                                        <select name="region" id="" class="form-select select-control">
+                                            <option value="">SELECT REGION</option>
+                                            <option value="Abu Dhabi">Abu Dhabi</option>
+                                            <option value="Dubai">Dubai</option>
+                                            <option value="Sharjah">Sharjah</option>
+                                            <option value="Ajman">Ajman</option>
+                                            <option value="Umm Al-Quwain">Umm Al-Quwain</option>
+                                            <option value="Fujairah">Fujairah</option>
+                                            <option value="Ras Al Khaimah">Ras Al Khaimah</option>
                                         </select>
                                     </div>
                                 </div>
@@ -75,6 +83,9 @@
                                             </select>
                                             <input type="text" class="form-control pt-0 w-60"
                                                 aria-label="Text input with dropdown button" value="{{ old('phone') }}" name="phone">
+                                                @if ($errors->has('phone'))
+                                                    <small class="text-danger">{{ $errors->first('phone') }}</small>
+                                                @endif
                                         </div>
 
                                     </div>
@@ -83,20 +94,29 @@
                                     <div class="form-group">
                                         <input type="email" class="form-control" value="{{old('email') }}" placeholder="Email*" name="email"
                                             required>
+                                            @if ($errors->has('email'))
+                                                <small class="text-danger">{{ $errors->first('email') }}</small>
+                                            @endif
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group pass position-relative">
                                         <input type="password" class="form-control" placeholder="Password*" name="password"
-                                            id="passwords" required>
-                                        <button><img src="{{ theme_asset(path: 'public/frontend/images/eye-icon.svg') }}" alt=""></button>
+                                            id="passwordField1" required>
+                                            @if ($errors->has('password'))
+                                                <small class="text-danger">{{ $errors->first('password') }}</small>
+                                            @endif
+                                        <button type="button" class="togglePassword" data-target="passwordField1"><img src="{{ theme_asset(path: 'public/frontend/images/eye-icon-closed.svg') }}" alt="" id="eyeIcon1"></button>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group pass position-relative">
-                                        <input type="password" class="form-control" placeholder="re-enter password*" name="con_password"
-                                            id="passwords" required>
-                                        <button><img src="{{ theme_asset(path: 'public/frontend/images/eye-icon.svg') }}" alt=""></button>
+                                        <input type="password" class="form-control" placeholder="re-enter password*" name="password_confirmation"
+                                            id="passwordField2" required>
+                                            @if ($errors->has('password_confirmation'))
+                                                <small class="text-danger">{{ $errors->first('password_confirmation') }}</small>
+                                            @endif
+                                        <button type="button" class="togglePassword" data-target="passwordField2"><img src="{{ theme_asset(path: 'public/frontend/images/eye-icon-closed.svg') }}" alt="" id="eyeIcon2"></button>
                                     </div>
                                 </div>
                             </div>
@@ -168,6 +188,28 @@
             })
 
         })
+
+         document.querySelectorAll('.togglePassword').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target'); // Get the target input field ID
+                const passwordField = document.getElementById(targetId); // Get the password input field
+                const eyeIcon = this.querySelector('img'); // Get the image element inside the button
+
+                // Paths for icons (use unescaped Blade output)
+                const openEyeIcon = "{!! theme_asset(path: 'public/frontend/images/eye-icon.svg') !!}";
+                const closedEyeIcon = "{!! theme_asset(path: 'public/frontend/images/eye-icon-closed.svg') !!}";
+
+                // Toggle password visibility and icon
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text'; // Show password
+                    eyeIcon.src = openEyeIcon; // Open eye icon
+                } else {
+                    passwordField.type = 'password'; // Hide password
+                    eyeIcon.src = closedEyeIcon; // Closed eye icon
+                }
+            });
+        });
+
     </script>
 
 </body>
